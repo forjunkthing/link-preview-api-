@@ -4,7 +4,9 @@ const rateLimit = require('express-rate-limit');
 const { fetchMetadata } = require('./utils/metadata');
 require('dotenv').config();
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? require('stripe')(stripeKey) : null;
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -76,6 +78,10 @@ app.get('/api/preview', requireApiKey, async (req, res) => {
 
 // 1. Create a Checkout Session
 app.post('/create-checkout-session', async (req, res) => {
+    if (!stripe) {
+        return res.status(500).send("Stripe Secret Key not configured. Please add your test key to the .env file.");
+    }
+
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],

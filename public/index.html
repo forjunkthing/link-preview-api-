@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Preview API</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
+
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-6">
     <div class="max-w-3xl w-full text-center space-y-8">
         <h1 class="text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
             Link Preview API
         </h1>
         <p class="text-xl text-gray-300">
-            The fastest way to extract structured OpenGraph, Twitter Cards, and standard metadata from any URL. Perfect for chat apps, forums, and social feeds.
+            The fastest way to extract structured OpenGraph, Twitter Cards, and standard metadata from any URL. Perfect
+            for chat apps, forums, and social feeds.
         </p>
 
         <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl space-y-6 text-left border border-gray-700">
@@ -28,15 +33,25 @@
 
             <div class="mt-8 border-t border-gray-700 pt-8 text-center space-y-6">
                 <h3 class="text-3xl font-bold">Get Your API Key</h3>
-                <p class="text-gray-400">Unlock production access for only <span class="text-white font-bold">$10/month</span>.</p>
-                
+                <p class="text-gray-400">Unlock production access for only <span
+                        class="text-white font-bold">$10/month</span>.</p>
+
                 <form action="/create-checkout-session" method="POST">
-                    <button type="submit" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-10 rounded-full text-xl transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                    <button type="submit"
+                        class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-10 rounded-full text-xl transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                         Subscribe Now
                     </button>
                 </form>
             </div>
         </div>
-    </div>
+        <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success')) {
+            alert('Payment Successful! (Mocked) Your API Key has been provisioned.');
+        } else if (urlParams.get('canceled')) {
+            alert('Payment Canceled.');
+        }
+        </script>
 </body>
+
 </html>

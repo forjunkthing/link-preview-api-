@@ -4,8 +4,12 @@ const rateLimit = require('express-rate-limit');
 const { fetchMetadata } = require('./utils/metadata');
 require('dotenv').config();
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Serve static files from the public directory
+app.use(express.static('public'));
 
 app.use(cors());
 app.use(express.json());
@@ -66,6 +70,62 @@ app.get('/api/preview', requireApiKey, async (req, res) => {
         console.error(`Error processing ${targetUrl}:`, error.message);
         res.status(500).json({ error: error.message });
     }
+});
+
+// --- Stripe Monetization Endpoints ---
+
+// 1. Create a Checkout Session
+app.post('/create-checkout-session', async (req, res) => {
+    try {
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: 'Link Preview API - Pro Tier',
+                            description: 'Production access with higher rate limits.',
+                        },
+                        unit_amount: 1000, // $10.00
+                        recurring: { interval: 'month' }
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'subscription',
+            success_url: `http://localhost:${PORT}/?success=true`,
+            cancel_url: `http://localhost:${PORT}/?canceled=true`,
+        });
+        res.redirect(303, session.url);
+    } catch (error) {
+        console.error("Stripe error:", error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// 2. Webhook to provision API Keys
+// In production, use express.raw({type: 'application/json'}) to verify signatures
+app.post('/webhook', express.json(), (req, res) => {
+    const event = req.body;
+
+    // Handle the event
+    switch (event.type) {
+        case 'checkout.session.completed':
+            const session = event.data.object;
+            // In a real app, you would:
+            // 1. Generate a unique API Key: const newApiKey = crypto.randomUUID();
+            // 2. Save it to your Database mapped to session.customer_details.email
+            // 3. Email the API key to the user
+            console.log(`Payment successful for: ${session.customer_details.email}`);
+            console.log(`Would generate and email API Key to: ${session.customer_details.email}`);
+            break;
+        default:
+            console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    res.send();
 });
 
 app.listen(PORT, () => {
